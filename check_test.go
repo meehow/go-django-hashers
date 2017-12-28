@@ -28,7 +28,7 @@ func TestCheckPassworWrongIterations(t *testing.T) {
 }
 
 func TestCheckPassworWrongHash(t *testing.T) {
-	_, err := CheckPassword("", "pbkdf2_sha256$20000$$not+bash64")
+	_, err := CheckPassword("", "pbkdf2_sha256$20000$$not+base64")
 	if err == nil {
 		t.Error("Wrong hash encoding should return an error.")
 	}
