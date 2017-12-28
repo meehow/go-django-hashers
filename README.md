@@ -3,6 +3,18 @@ Go Django Hashers
 
 Go implementation of hashers used in Django
 
+Implemented hashers:
+- `pbkdf2_sha256`
+- `pbkdf2_sha1`
+- `sha1`
+- `md5`
+- `unsalted_sha1`
+- `unsalted_md5`
+
+Hashers based on `bcrypt` are not implemented because `golang.org/x/crypto/bcrypt` is not yet compatible with Python's bcrypt. 
+
+So far only `CheckPassword` function is implemented. If you also need `MakePassword` function, please open an issue.
+
 Installation
 ============
 
