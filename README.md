@@ -1,7 +1,7 @@
 Go Django Hashers
 =================
 
-Go implementation of hashers used in Django
+Go implementation of password hashers used in Django
 
 Implemented hashers:
 - `pbkdf2_sha256`
