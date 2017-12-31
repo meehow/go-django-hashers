@@ -61,6 +61,14 @@ func TestCheckPasswordPbkdf2Sha1(t *testing.T) {
 	}
 }
 
+func TestCheckPasswordIncomplete(t *testing.T) {
+	encoded := passwords["sha1"]
+	_, err := CheckPassword(password, encoded[:len(encoded)-2])
+	if err == nil {
+		t.Error("Incomplete hash should return an error.")
+	}
+}
+
 func TestCheckPasswordSaltedSha1(t *testing.T) {
 	ok, err := CheckPassword(password, passwords["sha1"])
 	if err != nil {
@@ -96,12 +104,23 @@ func TestCheckPasswordUnsaltedMd5(t *testing.T) {
 	}
 }
 
-func BenchmarkCheckPassword(b *testing.B) {
+func BenchmarkCheckCorrectPassword(b *testing.B) {
 	for hasher, encoded := range passwords {
 		DefaultHasher = hasher
 		b.Run(hasher, func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
 				CheckPassword(password, encoded)
+			}
+		})
+	}
+}
+
+func BenchmarkCheckIncorrectPassword(b *testing.B) {
+	for hasher, encoded := range passwords {
+		DefaultHasher = hasher
+		b.Run(hasher, func(b *testing.B) {
+			for i := 0; i < b.N; i++ {
+				CheckPassword(password[1:], encoded)
 			}
 		})
 	}

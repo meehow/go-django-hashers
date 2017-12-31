@@ -5,6 +5,7 @@ import (
 	"crypto/md5"
 	"crypto/sha1"
 	"crypto/sha256"
+	"crypto/subtle"
 	"encoding/base64"
 	"encoding/hex"
 	"errors"
@@ -76,16 +77,7 @@ func checkSaltedHash(password, encoded string, h func() hash.Hash) (bool, error)
 	if len(parts) != 3 {
 		return false, errors.New("Hash must consist of 3 segments")
 	}
-	salt := parts[1]
-	k, err := hex.DecodeString(parts[2])
-	if err != nil {
-		return false, fmt.Errorf("Wrong hash encoding: %v", err)
-	}
-	hf := h()
-	if _, err := io.WriteString(hf, salt+password); err != nil {
-		return false, err
-	}
-	return bytes.Equal(k, hf.Sum(nil)), nil
+	return checkHash(parts[1]+password, parts[2], h)
 }
 
 func checkUnsaltedHash(password, encoded string, h func() hash.Hash) (bool, error) {
@@ -93,13 +85,20 @@ func checkUnsaltedHash(password, encoded string, h func() hash.Hash) (bool, erro
 	if idx > -1 {
 		encoded = encoded[idx+2:]
 	}
+	return checkHash(password, encoded, h)
+}
+
+func checkHash(password, encoded string, h func() hash.Hash) (bool, error) {
 	k, err := hex.DecodeString(encoded)
 	if err != nil {
 		return false, fmt.Errorf("Wrong hash encoding: %v", err)
 	}
 	hf := h()
+	if len(k) != hf.Size() {
+		return false, fmt.Errorf("Hash is %d bytes long, but should be %d bytes long", len(k), hf.Size())
+	}
 	if _, err := io.WriteString(hf, password); err != nil {
 		return false, err
 	}
-	return bytes.Equal(k, hf.Sum(nil)), nil
+	return subtle.ConstantTimeCompare(k, hf.Sum(nil)) == 1, nil
 }
