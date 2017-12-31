@@ -8,7 +8,6 @@ import (
 var hashers = []string{"pbkdf2_sha256", "pbkdf2_sha1", "sha1", "md5"}
 
 func TestMakePassword(t *testing.T) {
-	var password = "secret"
 	for _, hasher := range hashers {
 		DefaultHasher = hasher
 		encoded, err := MakePassword(password)
@@ -24,5 +23,16 @@ func TestMakePassword(t *testing.T) {
 		} else if ok != true {
 			t.Error("Password doesn't match the hash")
 		}
+	}
+}
+
+func BenchmarkMakePassword(b *testing.B) {
+	for _, hasher := range hashers {
+		DefaultHasher = hasher
+		b.Run(hasher, func(b *testing.B) {
+			for i := 0; i < b.N; i++ {
+				MakePassword(password)
+			}
+		})
 	}
 }
